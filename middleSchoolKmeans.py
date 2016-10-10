@@ -13,7 +13,8 @@ def loadAndDealData():
             scoreList.append(dealsheet.cell_value(i,4))
     return scoreList
 
-def writeData(cuArray,mycenter):
+def writeData(curList,mycenter,k):
+    start =65;startRank = curList[0]
     workbook = xlrd.open_workbook('math2.xls')
     newexcel = xlwt.Workbook()
     newSheet = newexcel.add_sheet(u'sheet1',cell_overwrite_ok=True)
@@ -24,11 +25,21 @@ def writeData(cuArray,mycenter):
             sign1 +=1
             for j in range(0,dealsheet.ncols):
                 newSheet.write(i,j,dealsheet.cell_value(i,j))
-            newSheet.write(i,dealsheet.ncols,int(cuArray[sign1-1][0][0]))
-    newSheet.write(0, dealsheet.ncols, '根据聚类的分配等级')
+            newSheet.write(i,dealsheet.ncols,curList[i-1])
+            if startRank == curList[i-1]:
+                newSheet.write(i,dealsheet.ncols+1,chr(start))
+            else:
+                startRank = curList[i-1]
+                start+=1
+                newSheet.write(i,dealsheet.ncols+1,chr(start))
+
+    newSheet.write(0, 0, '分析结果')
+    newSheet.write(0, 1, '四类的中心点')
+    newSheet.write(0, 7, '聚类的评价等级')
     for item in range(k):
-        newSheet.write(0,dealsheet.ncols+item,float(mycenter[item,][0]))
+        newSheet.write(0,2+item,float(mycenter[item,][0]))
     newexcel.save('newdata.xls')
+
 
 
 def distEclud(score1,score2):
@@ -79,19 +90,22 @@ def scoreKmeans(datalist,k,dist=distEclud,creatCenter=randCent):
     return centroids,clusterArray,flag
 
 if __name__ == '__main__':
+    k=4
     datalist = loadAndDealData()
     with open('result.txt', 'a') as _file:
         _file.write(u'log' + str(time.time()) + '\n')
-    mycenter,cluserArray,flag = scoreKmeans(datalist,4)
+    mycenter,cluserArray,flag = scoreKmeans(datalist,k)
     print (u'处理完成，迭代了%d次' %flag)
     clusterList = []
     # for i in range(mycenter.shape[0]):
     #     clusterList.append(float(mycenter[i,][0]))
     # clusterList.sort(reverse=True)
-    writeData(cluserArray,mycenter)
-    # for i in range(cluserArray.shape[0]):
-    #     print(i)
-    #     clusterList.append(float(cluserArray[i,][0][0]))
-    # print(clusterList)
-
-
+    #writeData(cluserArray,mycenter)
+    #print(cluserArray)
+    # print(array(cluserArray[0][0]).shape)
+    # newarray=array(cluserArray[0][0])
+    # print(newarray[0][0])
+    for i in range(cluserArray.shape[0]):
+         newarray = array(cluserArray[i][0])
+         clusterList.append(int(newarray[0][0]))
+    writeData(clusterList,mycenter,k)
